@@ -2538,8 +2538,9 @@ export default React.memo(function CartSidebar({ width = 400 }: CartSidebarProps
                 throw new Error(errorData.error || `Server returned ${res.status}`);
               }
 
-              if (activeOrder) {
-                voidOrderItem(activeOrder.orderId, itemToVoid.lineItemId);
+              const targetOrderId = activeOrder?.orderId || currentTableOrderId;
+              if (targetOrderId) {
+                voidOrderItem(targetOrderId, itemToVoid.lineItemId);
               }
               showToast({
                 type: "success",
