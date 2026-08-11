@@ -29,7 +29,7 @@ export let API_URL: string = isDev
   ? `http://${getLocalBackendIP()}:3000`
   : (
     (typeof process !== 'undefined' ? process.env?.EXPO_PUBLIC_API_URL : undefined) ??
-    'http://localhost:3000'
+    'https://pos-demo-11aug-production.up.railway.app'
   );
 
 export const setApiUrl = (url: string) => {
