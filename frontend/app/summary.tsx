@@ -1134,7 +1134,8 @@ export default function SummaryScreen() {
   useEffect(() => {
     const fetchDishLoyaltyRewards = async () => {
       const phone = loyaltyPhone ? `${selectedCountry.code} ${loyaltyPhone.trim()}` : "";
-      if (!phone || cart.length === 0) {
+      const activeCart = cart.filter((i: any) => i.status !== "VOIDED" && i.isVoided !== true && i.StatusCode !== 0 && i.statusCode !== 0);
+      if (!phone || activeCart.length === 0) {
         setLoyaltyDiscountItems([]);
         setLoyaltyDiscountAmount(0);
         setAppliedDishRewards([]);
@@ -1142,7 +1143,7 @@ export default function SummaryScreen() {
       }
       try {
         const token = useAuthStore.getState().token;
-        const mappedItems = cart.map((i: any) => ({
+        const mappedItems = activeCart.map((i: any) => ({
           DishId: i.DishId || i.dishId || i.id,
           Qty: i.qty,
           Price: i.price,
@@ -1159,12 +1160,16 @@ export default function SummaryScreen() {
         });
         const data = await res.json();
         if (data.success) {
-          const processed = (data.items || []).map((i: any) => ({
-            ...i,
-            qty: i.Qty !== undefined ? i.Qty : i.qty,
-            price: i.Price !== undefined ? i.Price : i.price,
-            name: i.name || cart.find((raw: any) => String(raw.id || raw.DishId || raw.dishId).toLowerCase() === String(i.DishId || i.id).toLowerCase())?.name || "Dish"
-          }));
+          const processed = (data.items || []).map((i: any) => {
+            const originalCartItem = activeCart.find((raw: any) => String(raw.id || raw.DishId || raw.dishId).toLowerCase() === String(i.DishId || i.id).toLowerCase()) || {};
+            return {
+              ...originalCartItem,
+              ...i,
+              qty: i.Qty !== undefined ? i.Qty : i.qty,
+              price: i.Price !== undefined ? i.Price : i.price,
+              name: i.name || originalCartItem.name || "Dish"
+            };
+          });
           setLoyaltyDiscountItems(processed);
           setLoyaltyDiscountAmount(data.totalDiscount || 0);
           setAppliedDishRewards(data.appliedRewards || []);
@@ -1185,7 +1190,8 @@ export default function SummaryScreen() {
   }, [loyaltyPhone, selectedCountry, cart]);
 
   const finalItems = useMemo(() => {
-    return loyaltyDiscountItems.length > 0 ? loyaltyDiscountItems : cart;
+    const rawItems = loyaltyDiscountItems.length > 0 ? loyaltyDiscountItems : cart;
+    return rawItems.filter((i: any) => i.status !== "VOIDED" && i.isVoided !== true && i.StatusCode !== 0 && i.statusCode !== 0);
   }, [loyaltyDiscountItems, cart]);
 
 
@@ -2856,11 +2862,16 @@ export default function SummaryScreen() {
           const verifyData = await verifyRes.json();
 
           if (verifyData.success) {
-            if (activeOrder && itemToVoid) {
+            const hasDbOrder = displayOrderId && displayOrderId !== "NEW" && displayOrderId !== "PENDING" && !displayOrderId.startsWith("TEMP-");
+            if (hasDbOrder && itemToVoid) {
               try {
-                await fetch(`${API_URL}/api/orders/remove-item`, {
+                const token = useAuthStore.getState().token;
+                const res = await fetch(`${API_URL}/api/orders/remove-item`, {
                   method: "POST",
-                  headers: { "Content-Type": "application/json" },
+                  headers: { 
+                    "Content-Type": "application/json",
+                    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+                  },
                   body: JSON.stringify({
                     tableId: context.tableId,
                     itemId: itemToVoid.lineItemId,
@@ -2868,7 +2879,11 @@ export default function SummaryScreen() {
                     userId: user?.userId,
                   }),
                 });
-                voidOrderItem(activeOrder.orderId, itemToVoid.lineItemId);
+                if (!res.ok) {
+                  const errorData = await res.json().catch(() => ({}));
+                  throw new Error(errorData.error || `Server returned ${res.status}`);
+                }
+                voidOrderItem(displayOrderId, itemToVoid.lineItemId);
                 useCartStore.getState().voidCartItem(itemToVoid.lineItemId);
                 showToast({ type: "success", message: "Item Voided" });
               } catch (err) {

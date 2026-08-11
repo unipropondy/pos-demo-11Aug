@@ -2726,8 +2726,8 @@ router.get("/payment-methods", async (req, res) => {
       const pool = await poolPromise;
       const result = await pool.request().query(`
         SELECT 
-          PayMode       as payMode,
-          Description   as description,
+          RTRIM(LTRIM(PayMode))       as payMode,
+          RTRIM(LTRIM(Description))   as description,
           Position,
           Active        as active,
           DeviceSN,

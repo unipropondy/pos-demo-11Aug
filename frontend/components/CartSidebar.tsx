@@ -2518,9 +2518,13 @@ export default React.memo(function CartSidebar({ width = 400 }: CartSidebarProps
             voidCartItem(itemToVoid.lineItemId);
 
             try {
+              const token = useAuthStore.getState().token;
               const res = await fetch(`${API_URL}/api/orders/remove-item`, {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: { 
+                  "Content-Type": "application/json",
+                  ...(token ? { Authorization: `Bearer ${token}` } : {}),
+                },
                 body: JSON.stringify({
                   tableId: orderContext.tableId,
                   itemId: itemToVoid.lineItemId,
@@ -2529,16 +2533,19 @@ export default React.memo(function CartSidebar({ width = 400 }: CartSidebarProps
                 }),
               });
 
-              if (res.ok) {
-                if (activeOrder) {
-                  voidOrderItem(activeOrder.orderId, itemToVoid.lineItemId);
-                }
-                showToast({
-                  type: "success",
-                  message: "Item Voided",
-                  subtitle: "Item strike-through enabled",
-                });
+              if (!res.ok) {
+                const errorData = await res.json().catch(() => ({}));
+                throw new Error(errorData.error || `Server returned ${res.status}`);
               }
+
+              if (activeOrder) {
+                voidOrderItem(activeOrder.orderId, itemToVoid.lineItemId);
+              }
+              showToast({
+                type: "success",
+                message: "Item Voided",
+                subtitle: "Item strike-through enabled",
+              });
             } catch (err) {
               console.error("Void Error:", err);
               showToast({ type: "error", message: "Failed to void item" });
