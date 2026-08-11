@@ -1169,8 +1169,8 @@ class UniversalPrinter {
     const DIV = "[L]------------------------------------------------\n";
 
     // Item wrapping constants (ESC/POS width alignments)
-    const DISH_WRAP = 19;
-    const BIG_MOD_WRAP = 20;   // big-font chars available for modifiers (24 - 4 chars margin/prefix)
+    const DISH_WRAP = 38;
+    const BIG_MOD_WRAP = 40;   // tall-font chars available for modifiers (48 - 4 chars margin/prefix)
 
     // ── Helper: wrap text ─────────────────────────────────────────────
     const wrapText = (str: string, maxChars: number): string[] => {
@@ -1198,33 +1198,33 @@ class UniversalPrinter {
       const qtyNum   = item.quantity || item.qty || 1;
       const itemName = item.name || item.DishName || "";
 
-      // Item name: big + bold, wrapped at 19 chars
+      // Item name: tall + bold, wrapped at 38 chars
       wrapText(itemName.replace(/\n/g, " "), DISH_WRAP).forEach((chunk: string, idx: number) => {
-        if (idx === 0) t += `[L]<font size='big'><B>[${qtyNum}] ${chunk}</B></font>\n`;
-        else           t += `[L]<font size='big'><B>    ${chunk}</B></font>\n`;
+        if (idx === 0) t += `[L]<font size='tall'><B>[${qtyNum}] ${chunk}</B></font>\n`;
+        else           t += `[L]<font size='tall'><B>    ${chunk}</B></font>\n`;
       });
 
       // Song name
       const songName = item.songName || item.SongName || "";
-      if (songName) t += `[L]<font size='big'><B>  ♪ ${songName}</B></font>\n`;
+      if (songName) t += `[L]<font size='tall'><B>  ♪ ${songName}</B></font>\n`;
 
       // Takeaway flag
       const isTw = !!(item.isTakeaway || item.IsTakeaway || item.isTakeAway || item.IsTakeAway);
-      if (isTw) t += `[L]<font size='big'><B>  >> TAKEAWAY <<</B></font>\n`;
+      if (isTw) t += `[L]<font size='tall'><B>  >> TAKEAWAY <<</B></font>\n`;
 
-      // Modifiers: big font, wraps at 20 chars
+      // Modifiers: tall font, wraps at 40 chars
       if (item.modifiers && item.modifiers.length > 0) {
         item.modifiers.forEach((m: any) => {
           const modName = m.ModifierName || m.modifierName || m.name || m.ModifierNameEn || "";
           if (modName) {
             wrapText(modName, BIG_MOD_WRAP).forEach((chunk: string, idx: number) => {
-              t += idx === 0 ? `[L]<font size='big'><B>  + ${chunk}</B></font>\n` : `[L]<font size='big'><B>    ${chunk}</B></font>\n`;
+              t += idx === 0 ? `[L]<font size='tall'><B>  + ${chunk}</B></font>\n` : `[L]<font size='tall'><B>    ${chunk}</B></font>\n`;
             });
           }
         });
       }
 
-      // Combo selections: big font, wrap at 20 chars
+      // Combo selections: tall font, wrap at 40 chars
       let comboSels = item.comboSelections;
       if (!comboSels || (Array.isArray(comboSels) && comboSels.length === 0)) {
         const rawCombo = item.ComboDetailsJSON || item.comboDetailsJSON || item.ComboDetails || item.comboDetails;
@@ -1252,7 +1252,7 @@ class UniversalPrinter {
               const optName = opt.name || opt.DishName || opt.itemName || "";
               if (optName) {
                 wrapText(optName, BIG_MOD_WRAP).forEach((chunk: string, idx: number) => {
-                  t += idx === 0 ? `[L]<font size='big'><B>  - ${chunk}</B></font>\n` : `[L]<font size='big'><B>    ${chunk}</B></font>\n`;
+                  t += idx === 0 ? `[L]<font size='tall'><B>  - ${chunk}</B></font>\n` : `[L]<font size='tall'><B>    ${chunk}</B></font>\n`;
                 });
               }
             });
@@ -1260,11 +1260,11 @@ class UniversalPrinter {
         });
       }
 
-      // Note / Remarks: big font, wrap at 20 chars
+      // Note / Remarks: tall font, wrap at 40 chars
       const noteText = item.note || item.notes || item.Remarks || item.remarks;
       if (noteText) {
         wrapText(noteText, BIG_MOD_WRAP).forEach((chunk: string, idx: number) => {
-          t += idx === 0 ? `[L]<font size='big'><B>  * ${chunk}</B></font>\n` : `[L]<font size='big'><B>    ${chunk}</B></font>\n`;
+          t += idx === 0 ? `[L]<font size='tall'><B>  * ${chunk}</B></font>\n` : `[L]<font size='tall'><B>    ${chunk}</B></font>\n`;
         });
       }
 
@@ -1288,7 +1288,7 @@ class UniversalPrinter {
       text += DIV;
     }
 
-    text += "[L]<font size='big'><B>QTY  ITEM</B></font>\n";
+    text += "[L]<font size='tall'><B>QTY  ITEM</B></font>\n";
     text += DIV;
 
     // ── ITEMS ─────────────────────────────────────────────────────────
@@ -1320,8 +1320,8 @@ class UniversalPrinter {
     }
 
     // ── FOOTER ────────────────────────────────────────────────────────
-    text += `[L]<font size='big'><B>Order By : ${waiter}</B></font>\n`;
-    text += `[L]<font size='big'><B>Order No : ${orderNo}</B></font>\n`;
+    text += `[L]<font size='tall'><B>Order By : ${waiter}</B></font>\n`;
+    text += `[L]<font size='tall'><B>Order No : ${orderNo}</B></font>\n`;
 
     if (type !== "KDS_PRINT") {
       // KOT: Kitchen Name + Table Number always at the very bottom
