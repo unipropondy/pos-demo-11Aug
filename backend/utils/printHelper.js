@@ -49,7 +49,7 @@ function formatKOTThermalText(data, type = 'NEW') {
     text += DIV;
   }
 
-  text += "[L]<font size='tall'><B>QTY  ITEM</B></font>\n";
+  text += "[L]<font size='big'><B>QTY  ITEM</B></font>\n";
   text += DIV;
 
   // ── ITEMS ───────────────────────────────────────────────────────────
@@ -73,17 +73,32 @@ function formatKOTThermalText(data, type = 'NEW') {
       text += DIV;
     }
   } else {
-    // KOT: flat list
-    items.forEach((item, idx) => {
-      text += _formatItem(item);
-      if (idx < items.length - 1) text += '[L]\n';
+    // KOT: group by kitchen section (same as KDS, for alignment)
+    const kotGroups = {};
+    items.forEach(item => {
+      const k = (item.KitchenTypeName || item.kitchenTypeName || item.dishGroupName || item.categoryName || 'KITCHEN').toUpperCase().trim();
+      if (!kotGroups[k]) kotGroups[k] = [];
+      kotGroups[k].push(item);
     });
-    text += DIV;
+
+    const kotGroupEntries = Object.entries(kotGroups);
+    kotGroupEntries.forEach(([kName, groupItems], gIdx) => {
+      // Only show section header if there are multiple kitchens
+      if (kotGroupEntries.length > 1) {
+        text += `[C]<font size='big'><B>--- ${kName} ---</B></font>\n`;
+        text += DIV;
+      }
+      groupItems.forEach((item, idx) => {
+        text += _formatItem(item);
+        if (idx < groupItems.length - 1) text += '[L]\n';
+      });
+      text += DIV;
+    });
   }
 
   // ── FOOTER ──────────────────────────────────────────────────────────
-  text += `[L]<font size='tall'><B>Order By : ${waiter}</B></font>\n`;
-  text += `[L]<font size='tall'><B>Order No : ${orderNo}</B></font>\n`;
+  text += `[L]<font size='big'><B>Order By : ${waiter}</B></font>\n`;
+  text += `[L]<font size='big'><B>Order No : ${orderNo}</B></font>\n`;
 
   if (type !== 'KDS_PRINT') {
     // KOT: Kitchen Name + Table Number always at the very bottom
@@ -100,6 +115,9 @@ function formatKOTThermalText(data, type = 'NEW') {
       text += DIV;
     }
   }
+
+  // ── FEED LINES at end to prevent last line from being cut ────────────
+  text += '[L]\n'.repeat(6);
 
   return text;
 }
@@ -140,35 +158,35 @@ function _formatItem(item) {
   const qtyNum   = item.quantity || item.qty || 1;
   const itemName = item.name     || item.DishName || '';
 
-  // ── Item name: tall font, bold, wrapped at 38 chars (normal width, double height) ──
-  const DISH_WRAP = 38;
-  const BIG_MOD_WRAP = 40;
+  // ── Item name: big font (double height + width), bold, wrapped at 20 chars ──
+  const DISH_WRAP = 20;
+  const BIG_MOD_WRAP = 20;   // big-font chars available for modifiers
 
   _wrapText(itemName.replace(/\n/g, ' '), DISH_WRAP).forEach((chunk, idx) => {
     if (idx === 0) {
-      text += `[L]<font size='tall'><B>[${qtyNum}] ${chunk}</B></font>\n`;
+      text += `[L]<font size='big'><B>[${qtyNum}] ${chunk}</B></font>\n`;
     } else {
-      text += `[L]<font size='tall'><B>    ${chunk}</B></font>\n`;
+      text += `[L]<font size='big'><B>    ${chunk}</B></font>\n`;
     }
   });
 
   // ── Song name ──────────────────────────────────────────────────────────────
   const songName = item.songName || item.SongName || '';
-  if (songName) text += `[L]<font size='tall'><B>  ♪ ${songName}</B></font>\n`;
+  if (songName) text += `[L]<font size='big'><B>  ♪ ${songName}</B></font>\n`;
 
   // ── Takeaway flag ──────────────────────────────────────────────────────────
   const isTakeaway = !!(item.isTakeaway || item.IsTakeaway || item.isTakeAway || item.IsTakeAway);
-  if (isTakeaway) text += `[L]<font size='tall'><B>  >> TAKEAWAY <<</B></font>\n`;
+  if (isTakeaway) text += `[L]<font size='big'><B>  >> TAKEAWAY <<</B></font>\n`;
 
-  // ── Modifiers (tall font, bold) — wrap at 40 chars ────────────────────
+  // ── Modifiers (big font, bold) — wrap at 20 chars ────────────────────
   if (item.modifiers && item.modifiers.length > 0) {
     item.modifiers.forEach(m => {
       const modName = m.ModifierName || m.modifierName || m.name || m.ModifierNameEn || '';
       if (modName) {
         _wrapText(modName, BIG_MOD_WRAP).forEach((chunk, idx) => {
           text += idx === 0
-            ? `[L]<font size='tall'><B>  + ${chunk}</B></font>\n`
-            : `[L]<font size='tall'><B>    ${chunk}</B></font>\n`;
+            ? `[L]<font size='big'><B>  + ${chunk}</B></font>\n`
+            : `[L]<font size='big'><B>    ${chunk}</B></font>\n`;
         });
       }
     });
@@ -203,8 +221,8 @@ function _formatItem(item) {
           if (optName) {
             _wrapText(optName, BIG_MOD_WRAP).forEach((chunk, idx) => {
               text += idx === 0
-                ? `[L]<font size='tall'><B>  - ${chunk}</B></font>\n`
-                : `[L]<font size='tall'><B>    ${chunk}</B></font>\n`;
+                ? `[L]<font size='big'><B>  - ${chunk}</B></font>\n`
+                : `[L]<font size='big'><B>    ${chunk}</B></font>\n`;
             });
           }
         });
@@ -217,8 +235,8 @@ function _formatItem(item) {
   if (noteText) {
     _wrapText(noteText, BIG_MOD_WRAP).forEach((chunk, idx) => {
       text += idx === 0 
-        ? `[L]<font size='tall'><B>  * ${chunk}</B></font>\n` 
-        : `[L]<font size='tall'><B>    ${chunk}</B></font>\n`;
+        ? `[L]<font size='big'><B>  * ${chunk}</B></font>\n` 
+        : `[L]<font size='big'><B>    ${chunk}</B></font>\n`;
     });
   }
 
