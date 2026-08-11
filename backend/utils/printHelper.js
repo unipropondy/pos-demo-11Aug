@@ -36,20 +36,20 @@ function formatKOTThermalText(data, type = 'NEW') {
   let text = '';
   // 25mm top side white space (approx 6 empty lines)
   text += '[L]\n'.repeat(6);
-  text += `[C]<font size="big"><B>${title}</B></font>\n`;
-  text += `[C]<font size="big"><B>${dateStr}  ${timeStr}</B></font>\n`;
+  text += `[C]<font size='big'><B>${title}</B></font>\n`;
+  text += `[C]<font size='big'><B>${dateStr}  ${timeStr}</B></font>\n`;
   text += DIV;
 
   // TABLE visible at top for both KOT and KDS
   if (type === 'KDS_PRINT') {
-    text += `[C]<font size="big"><B>TABLE NO : ${tableNo}</B></font>\n`;
+    text += `[C]<font size='big'><B>TABLE NO : ${tableNo}</B></font>\n`;
     text += DIV;
   } else {
-    text += `[C]<font size="big"><B>TABLE : ${tableNo}</B></font>\n`;
+    text += `[C]<font size='big'><B>TABLE : ${tableNo}</B></font>\n`;
     text += DIV;
   }
 
-  text += '[L]<font size="big"><B>QTY  ITEM</B></font>\n';
+  text += "[L]<font size='big'><B>QTY  ITEM</B></font>\n";
   text += DIV;
 
   // ── ITEMS ───────────────────────────────────────────────────────────
@@ -64,7 +64,7 @@ function formatKOTThermalText(data, type = 'NEW') {
 
     for (const [kName, groupItems] of Object.entries(groups)) {
       // Section header: big bold, centered
-      text += `[C]<font size="big"><B>--- ${kName} ---</B></font>\n`;
+      text += `[C]<font size='big'><B>--- ${kName} ---</B></font>\n`;
       text += DIV;
       groupItems.forEach((item, idx) => {
         text += _formatItem(item);
@@ -82,8 +82,8 @@ function formatKOTThermalText(data, type = 'NEW') {
   }
 
   // ── FOOTER ──────────────────────────────────────────────────────────
-  text += `[L]<font size="big"><B>Order By : ${waiter}</B></font>\n`;
-  text += `[L]<font size="big"><B>Order No : ${orderNo}</B></font>\n`;
+  text += `[L]<font size='big'><B>Order By : ${waiter}</B></font>\n`;
+  text += `[L]<font size='big'><B>Order No : ${orderNo}</B></font>\n`;
 
   if (type !== 'KDS_PRINT') {
     // KOT: Kitchen Name + Table Number always at the very bottom
@@ -96,7 +96,7 @@ function formatKOTThermalText(data, type = 'NEW') {
           : '');
     if (kotLabel) {
       text += DIV;
-      text += `[C]<font size="big"><B>${kotLabel}</B></font>\n`;
+      text += `[C]<font size='big'><B>${kotLabel}</B></font>\n`;
       text += DIV;
     }
   }
@@ -147,19 +147,19 @@ function _formatItem(item) {
 
   _wrapText(itemName.replace(/\n/g, ' '), DISH_WRAP).forEach((chunk, idx) => {
     if (idx === 0) {
-      text += `[L]<font size="big"><B>[${qtyNum}] ${chunk}</B></font>\n`;
+      text += `[L]<font size='big'><B>[${qtyNum}] ${chunk}</B></font>\n`;
     } else {
-      text += `[L]<font size="big"><B>    ${chunk}</B></font>\n`;
+      text += `[L]<font size='big'><B>    ${chunk}</B></font>\n`;
     }
   });
 
   // ── Song name ──────────────────────────────────────────────────────────────
   const songName = item.songName || item.SongName || '';
-  if (songName) text += `[L]<font size="big"><B>  ♪ ${songName}</B></font>\n`;
+  if (songName) text += `[L]<font size='big'><B>  ♪ ${songName}</B></font>\n`;
 
   // ── Takeaway flag ──────────────────────────────────────────────────────────
   const isTakeaway = !!(item.isTakeaway || item.IsTakeaway || item.isTakeAway || item.IsTakeAway);
-  if (isTakeaway) text += `[L]<font size="big"><B>  >> TAKEAWAY <<</B></font>\n`;
+  if (isTakeaway) text += `[L]<font size='big'><B>  >> TAKEAWAY <<</B></font>\n`;
 
   // ── Modifiers (big font, bold) — wrap at 20 chars ────────────────────
   if (item.modifiers && item.modifiers.length > 0) {
@@ -168,8 +168,8 @@ function _formatItem(item) {
       if (modName) {
         _wrapText(modName, BIG_MOD_WRAP).forEach((chunk, idx) => {
           text += idx === 0
-            ? `[L]<font size="big"><B>  + ${chunk}</B></font>\n`
-            : `[L]<font size="big"><B>    ${chunk}</B></font>\n`;
+            ? `[L]<font size='big'><B>  + ${chunk}</B></font>\n`
+            : `[L]<font size='big'><B>    ${chunk}</B></font>\n`;
         });
       }
     });
@@ -204,8 +204,8 @@ function _formatItem(item) {
           if (optName) {
             _wrapText(optName, BIG_MOD_WRAP).forEach((chunk, idx) => {
               text += idx === 0
-                ? `[L]<font size="big"><B>  - ${chunk}</B></font>\n`
-                : `[L]<font size="big"><B>    ${chunk}</B></font>\n`;
+                ? `[L]<font size='big'><B>  - ${chunk}</B></font>\n`
+                : `[L]<font size='big'><B>    ${chunk}</B></font>\n`;
             });
           }
         });
@@ -218,8 +218,8 @@ function _formatItem(item) {
   if (noteText) {
     _wrapText(noteText, BIG_MOD_WRAP).forEach((chunk, idx) => {
       text += idx === 0 
-        ? `[L]<font size="big"><B>  * ${chunk}</B></font>\n` 
-        : `[L]<font size="big"><B>    ${chunk}</B></font>\n`;
+        ? `[L]<font size='big'><B>  * ${chunk}</B></font>\n` 
+        : `[L]<font size='big'><B>    ${chunk}</B></font>\n`;
     });
   }
 
